@@ -5,7 +5,7 @@
 <title>Harbor hosting control panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Harbor is a self-hosted control panel for one Linux server: websites, email, DNS, databases, backups, security, Git deploys and moving sites from cPanel, in one place.">
+<meta name="description" content="Harbor is a self-hosted control panel for one Linux server: websites, email, DNS, databases, backups, security, malware scanning, Git deploys and moving sites from cPanel, in one place.">
 <meta name="theme-color" content="#0a1f2c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -249,6 +249,7 @@
           <dt>cPHulk</dt><dd>fail2ban for SSH, panel, mail, webmail and protected folders</dd>
           <dt>ModSecurity</dt><dd>OWASP Core Rule Set per site: off, detect only or block</dd>
           <dt>IP Blocker, Hotlink, Directory Privacy</dt><dd>All three, per site</dd>
+          <dt>Virus Scanner</dt><dd>ClamAV checks every site nightly; infected files quarantined, restore or delete</dd>
         </dl></div>
       <div class="map-group"><h3><svg aria-hidden="true"><use href="#i-ops"/></svg>Running the server</h3>
         <dl>
@@ -322,7 +323,7 @@
             <li><span>Databases</span><span>MariaDB</span></li>
             <li><span>Mail</span><span>Postfix, Dovecot, Rspamd with DKIM, Roundcube webmail</span></li>
             <li><span>DNS</span><span>BIND 9, authoritative only</span></li>
-            <li><span>Protection</span><span>ModSecurity v3 with the OWASP Core Rule Set, fail2ban</span></li>
+            <li><span>Protection</span><span>ModSecurity v3 with the OWASP Core Rule Set, fail2ban, ClamAV</span></li>
             <li><span>Applications</span><span>WP-CLI for WordPress, Git and rsync for deploys</span></li>
             <li><span>The panel</span><span>Python (FastAPI), server-rendered pages, SQLite, behind nginx TLS</span></li>
           </ul></div>
