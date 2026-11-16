@@ -37,14 +37,14 @@
 </header>
 <div class="wrap docs-layout">
   <nav class="toc" aria-label="On this page"><p class="toc-title">On this page</p>
-    <a href="#features-mapped-to-cpanel">Features, mapped to cPanel</a><a href="#install">Install</a><a class="sub" href="#before-you-rely-on-email">Before you rely on email</a><a class="sub" href="#hosting-dns-here">Hosting DNS here</a><a href="#after-installing-secure-the-server">After installing: secure the server</a><a href="#deploying-from-git">Deploying from Git</a><a href="#moving-from-cpanel">Moving from cPanel</a><a href="#updating">Updating</a><a href="#ports">Ports</a><a href="#api">API</a><a href="#security-model">Security model</a><a href="#files-on-the-server">Files on the server</a><a href="#development">Development</a><a href="#not-included-yet">Not included yet</a>
+    <a href="#features-mapped-to-cpanel">Features, mapped to cPanel</a><a href="#install">Install</a><a class="sub" href="#before-you-rely-on-email">Before you rely on email</a><a class="sub" href="#hosting-dns-here">Hosting DNS here</a><a href="#after-installing-secure-the-server">After installing: secure the server</a><a href="#deploying-from-git">Deploying from Git</a><a href="#malware-scanning">Malware scanning</a><a href="#moving-from-cpanel">Moving from cPanel</a><a href="#updating">Updating</a><a href="#ports">Ports</a><a href="#api">API</a><a href="#security-model">Security model</a><a href="#files-on-the-server">Files on the server</a><a href="#development">Development</a><a href="#not-included-yet">Not included yet</a>
   </nav>
   <main class="doc" id="main">
     <h1>Harbor documentation</h1>
     <div class="doc-intro"><p>A self-hosted alternative to cPanel for one Linux server: websites, email, DNS,
 databases, security and backups in one panel. One install script, no licence fees.</p>
 <p>Stack: <strong>Nginx + PHP-FPM + MariaDB</strong>, <strong>Postfix + Dovecot + Rspamd</strong> (mail), <strong>BIND 9</strong> (DNS),
-<strong>ModSecurity + OWASP CRS</strong> (firewall), <strong>Roundcube</strong> (webmail), <strong>WP-CLI</strong> (WordPress).</p></div>
+<strong>ModSecurity + OWASP CRS</strong> (firewall), <strong>ClamAV</strong> (malware scanning), <strong>Roundcube</strong> (webmail), <strong>WP-CLI</strong> (WordPress).</p></div>
     <div class="doc-meta">
       <a class="btn btn-solid" href="#install">Install</a>
       <a class="btn btn-line" href="https://github.com/estuty/HARBOR" rel="noopener">Source on GitHub</a>
@@ -175,6 +175,10 @@ databases, security and backups in one panel. One install script, no licence fee
 <td>Authenticator-app codes + one-time recovery codes; can be required for all admins</td>
 </tr>
 <tr>
+<td>ImunifyAV / Virus Scanner</td>
+<td><strong>ClamAV</strong> scans every site nightly and on demand; infected files quarantined automatically, admins notified; restore or delete on the site's Malware tab</td>
+</tr>
+<tr>
 <td>cPHulk brute-force protection</td>
 <td><strong>fail2ban</strong> for SSH, panel, SMTP/IMAP, webmail and protected folders; ban/unban in Security</td>
 </tr>
@@ -272,6 +276,22 @@ existing sites over automatically.</p>
 </ol>
 <p>The working copy lives in <code>/srv/harbor/sites/&lt;domain&gt;/git/</code> (outside the web root). Disconnecting deletes it and the
 key; the live files stay.</p>
+<h2 id="malware-scanning">Malware scanning</h2>
+<p>Harbor checks each site's files with <strong>ClamAV</strong> every night (03:00 UTC by default; change it or turn it
+off under <strong>Security → Malware scanning</strong>) and whenever you click <strong>Scan now</strong> on a site's <strong>Malware</strong> tab.</p>
+<ul>
+<li>Every file in the site folder is checked except the web server logs in <code>logs/</code>. Files over 100 MB can't be
+  checked and are listed in the scan log. Links are never followed. Files with line breaks or control characters
+  in their names are quarantined as suspicious (normal sites don't have them).</li>
+<li>An infected file is moved straight away to <code>/var/lib/harbor/quarantine/</code> (root only), the dashboard shows it
+  under "Needs attention", and admins get an email or webhook message (Settings → Alerts).</li>
+<li>On the Malware tab: <strong>Delete</strong> removes a quarantined file for good; <strong>Restore</strong> puts it back, owned by the site's
+  user with its permissions (for a false alarm), and later scans leave it alone unless the file changes.</li>
+<li>Signatures are downloaded by <code>clamav-freshclam</code> (a few times a day; the first download takes a few minutes after
+  installing). Harbor warns you if they get more than 3 days old.</li>
+<li>ClamAV runs only while a scan runs (no background daemon) and needs about <strong>1.5 GB of free memory</strong> during a
+  scan. Sites are scanned one at a time, at low CPU and disk priority.</li>
+</ul>
 <h2 id="moving-from-cpanel">Moving from cPanel</h2>
 <ol>
 <li>On the old host: cPanel → <strong>Backup → Download a Full Account Backup</strong> (destination: Home Directory).
@@ -389,6 +409,10 @@ The account page lists them all.</p>
 <tr>
 <td><code>/srv/harbor/sites/&lt;domain&gt;/git/</code></td>
 <td>Git deploy working copy and deploy key</td>
+</tr>
+<tr>
+<td><code>/var/lib/harbor/quarantine/&lt;site id&gt;/</code></td>
+<td>Quarantined files (malware scanning), root only</td>
 </tr>
 <tr>
 <td><code>/opt/harbor/adminer/</code>, <code>/var/lib/harbor-dbadmin/</code></td>
